@@ -70,6 +70,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'core.urls'
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://ebae-103-208-230-7.ngrok-free.app", "http://127.0.0.1:8000/"
+]
 
 
 SPECTACULAR_SETTINGS = {
