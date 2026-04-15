@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DigitalB — Property Intelligence Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:   #0a0f1e;
+      --navy2:  #111827;
+      --gold:   #c9a84c;
+      --gold2:  #e8c97a;
+      --cream:  #f5f0e8;
+      --muted:  #8b9ab5;
+      --border: rgba(201,168,76,0.2);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--navy);
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── Background grid ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Ambient glow ── */
+    .glow-1 {
+      position: fixed;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+      top: -200px; left: -200px;
+      pointer-events: none; z-index: 0;
+    }
+    .glow-2 {
+      position: fixed;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(24,95,165,0.12) 0%, transparent 70%);
+      bottom: -100px; right: -100px;
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── Page wrapper ── */
+    .page {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Nav ── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 28px 48px;
+      border-bottom: 1px solid var(--border);
+      animation: fadeDown 0.6s ease both;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .nav-logo {
+      width: 36px; height: 36px;
+      background: var(--gold);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-logo svg { width: 18px; height: 18px; }
+    .nav-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px; font-weight: 600;
+      color: var(--cream);
+      letter-spacing: 0.01em;
+    }
+    .nav-name span { color: var(--gold); }
+    .nav-pill {
+      font-size: 11px; font-weight: 500;
+      color: var(--gold);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 48px 60px;
+      text-align: center;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 500;
+      color: var(--gold);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      padding: 6px 16px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: rgba(201,168,76,0.06);
+      animation: fadeUp 0.7s 0.1s ease both;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(42px, 6vw, 72px);
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--cream);
+      max-width: 800px;
+      margin-bottom: 20px;
+      animation: fadeUp 0.7s 0.2s ease both;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .hero-sub {
+      font-size: 17px;
+      font-weight: 300;
+      color: var(--muted);
+      max-width: 480px;
+      line-height: 1.7;
+      margin-bottom: 72px;
+      animation: fadeUp 0.7s 0.3s ease both;
+    }
+
+    /* ── Cards ── */
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 780px;
+      width: 100%;
+      animation: fadeUp 0.7s 0.4s ease both;
+    }
+
+    .card {
+      position: relative;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 36px 32px 32px;
+      text-decoration: none;
+      overflow: hidden;
+      transition: transform 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+      cursor: pointer;
+      display: block;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: 16px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .card-dashboard::before {
+      background: radial-gradient(ellipse at top left, rgba(201,168,76,0.12), transparent 60%);
+    }
+    .card-ai::before {
+      background: radial-gradient(ellipse at top left, rgba(24,95,165,0.18), transparent 60%);
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.16);
+    }
+    .card:hover::before { opacity: 1; }
+    .card-dashboard:hover { border-color: rgba(201,168,76,0.4); }
+    .card-ai:hover        { border-color: rgba(24,95,165,0.5); }
+
+    .card-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+      position: relative; z-index: 1;
+    }
+    .card-dashboard .card-icon { background: rgba(201,168,76,0.15); }
+    .card-ai        .card-icon { background: rgba(24,95,165,0.2); }
+    .card-icon svg { width: 22px; height: 22px; }
+
+    .card-label {
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      position: relative; z-index: 1;
+    }
+    .card-dashboard .card-label { color: var(--gold); }
+    .card-ai        .card-label { color: #7eb8f7; }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px; font-weight: 600;
+      color: var(--cream);
+      margin-bottom: 10px;
+      line-height: 1.2;
+      position: relative; z-index: 1;
+    }
+
+    .card-desc {
+      font-size: 14px; font-weight: 300;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 28px;
+      position: relative; z-index: 1;
+    }
+
+    .card-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 500;
+      position: relative; z-index: 1;
+      transition: gap 0.2s ease;
+    }
+    .card:hover .card-cta { gap: 12px; }
+    .card-dashboard .card-cta { color: var(--gold); }
+    .card-ai        .card-cta { color: #7eb8f7; }
+    .card-cta svg { width: 14px; height: 14px; transition: transform 0.2s ease; }
+    .card:hover .card-cta svg { transform: translateX(3px); }
+
+    /* corner accent */
+    .card-corner {
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 80px; height: 80px;
+      opacity: 0.06;
+      transition: opacity 0.3s ease;
+    }
+    .card:hover .card-corner { opacity: 0.12; }
+
+    /* ── Footer ── */
+    footer {
+      padding: 24px 48px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      animation: fadeUp 0.7s 0.5s ease both;
+    }
+    .footer-left {
+      font-size: 12px; color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+    .footer-dots {
+      display: flex; gap: 6px; align-items: center;
+    }
+    .footer-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--border);
+    }
+    .footer-dot.active { background: var(--gold); }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="glow-1"></div>
+<div class="glow-2"></div>
+
+<div class="page">
+
+  <!-- Nav -->
+  <nav>
+    <div class="nav-brand">
+      <div class="nav-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#0a0f1e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+      <span class="nav-name">Digital<span>B</span></span>
+    </div>
+    <span class="nav-pill">Property Platform</span>
+  </nav>
+
+  <!-- Hero -->
+  <div class="hero">
+
+    <div class="hero-eyebrow">AI-powered property intelligence</div>
+
+    <h1 class="hero-title">
+      Manage properties.<br>
+      <em>Answer every call.</em>
+    </h1>
+
+    <p class="hero-sub">
+      One platform to manage your property listings and let AI handle every buyer enquiry — automatically, 24/7.
+    </p>
+
+    <!-- Two cards -->
+    <div class="cards">
+
+      <!-- Dashboard card -->
+      <a href="{% url 'property_list' %}" class="card card-dashboard">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+        </div>
+        <div class="card-label">Management</div>
+        <div class="card-title">Property Dashboard</div>
+        <div class="card-desc">Add, edit and manage all your flat and property listings. View call transcripts and track buyer activity.</div>
+        <div class="card-cta">
+          Open dashboard
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </div>
+        <!-- corner decoration -->
+        <svg class="card-corner" viewBox="0 0 80 80" fill="none">
+          <circle cx="80" cy="80" r="60" stroke="#c9a84c" stroke-width="1"/>
+          <circle cx="80" cy="80" r="40" stroke="#c9a84c" stroke-width="1"/>
+          <circle cx="80" cy="80" r="20" stroke="#c9a84c" stroke-width="1"/>
+        </svg>
+      </a>
+
+      <!-- AI Assistant card -->
+      <a href="{% url 'voice_index' %}" class="card card-ai">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#7eb8f7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+        </div>
+        <div class="card-label">AI Voice Agent</div>
+        <div class="card-title">AI Assistant</div>
+        <div class="card-desc">Your 24/7 voice agent that answers buyer questions about your properties using real-time data from your database.</div>
+        <div class="card-cta">
+          Speak with assistant
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </div>
+        <!-- corner decoration -->
+        <svg class="card-corner" viewBox="0 0 80 80" fill="none">
+          <circle cx="80" cy="80" r="60" stroke="#185FA5" stroke-width="1"/>
+          <circle cx="80" cy="80" r="40" stroke="#185FA5" stroke-width="1"/>
+          <circle cx="80" cy="80" r="20" stroke="#185FA5" stroke-width="1"/>
+        </svg>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <span class="footer-left">Team DigitalB &mdash; Internal Portal</span>
+    <div class="footer-dots">
+      <div class="footer-dot active"></div>
+      <div class="footer-dot"></div>
+      <div class="footer-dot"></div>
+    </div>
+  </footer>
+
+</div>
+
+</body>
+</html>

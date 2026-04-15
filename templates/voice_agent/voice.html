@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DigitalB — Voice Assistant</title>
+  {% load static %}
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, 'Helvetica Neue', sans-serif;
+      background: #000;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .bg-blur {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(160deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+      z-index: 0;
+    }
+    .bg-blur::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(60px);
+    }
+
+    .phone {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 360px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 64px 32px 56px;
+    }
+
+    /* ── Caller section ── */
+    .caller-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .call-type-label {
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.02em;
+    }
+
+    .avatar {
+      width: 96px; height: 96px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      font-weight: 300;
+      color: #fff;
+      position: relative;
+      flex-shrink: 0;
+      transition: transform 0.3s;
+    }
+
+    .avatar::before, .avatar::after {
+      content: '';
+      position: absolute;
+      inset: -10px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(99,102,241,0.35);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .avatar::after { inset: -22px; border-color: rgba(99,102,241,0.18); }
+
+    .avatar.ringing::before { opacity: 1; animation: avatarpulse 1.8s infinite; }
+    .avatar.ringing::after  { opacity: 1; animation: avatarpulse 1.8s 0.45s infinite; }
+
+    @keyframes avatarpulse {
+      0%   { transform: scale(1);   opacity: 0.7; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+
+    .caller-name {
+      font-size: 30px;
+      font-weight: 300;
+      color: #fff;
+      letter-spacing: -0.02em;
+      text-align: center;
+      line-height: 1.1;
+    }
+
+    .caller-sub {
+      font-size: 14px;
+      color: rgba(255,255,255,0.45);
+      text-align: center;
+      margin-top: -6px;
+    }
+
+    .call-timer {
+      font-family: 'DM Mono', monospace;
+      font-size: 15px;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.1em;
+      min-height: 22px;
+      transition: color 0.3s;
+    }
+    .call-timer.active { color: rgba(255,255,255,0.65); }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.07);
+      border: 0.5px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.5);
+      transition: all 0.35s;
+    }
+    .status-pill.connected {
+      background: rgba(34,197,94,0.1);
+      border-color: rgba(34,197,94,0.3);
+      color: #4ade80;
+    }
+    .status-pill.connecting {
+      background: rgba(251,191,36,0.09);
+      border-color: rgba(251,191,36,0.28);
+      color: #fbbf24;
+    }
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      display: none;
+    }
+    .status-pill.connected .status-dot,
+    .status-pill.connecting .status-dot { display: block; }
+    .status-pill.connected .status-dot { animation: blink 1.4s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    /* ── Waveform ── */
+    .waveform {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 36px;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .waveform.show { opacity: 1; }
+    .waveform span {
+      width: 3px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.3);
+      height: 4px;
+      transition: background 0.3s;
+    }
+    .waveform.user-speaking span { background: #818cf8; }
+    .waveform.ai-speaking   span { background: #4ade80; }
+    .waveform.animating span { animation: wavebar 0.65s infinite alternate ease-in-out; }
+    .waveform span:nth-child(1)  { animation-delay: 0.00s; }
+    .waveform span:nth-child(2)  { animation-delay: 0.07s; }
+    .waveform span:nth-child(3)  { animation-delay: 0.14s; }
+    .waveform span:nth-child(4)  { animation-delay: 0.21s; }
+    .waveform span:nth-child(5)  { animation-delay: 0.14s; }
+    .waveform span:nth-child(6)  { animation-delay: 0.07s; }
+    .waveform span:nth-child(7)  { animation-delay: 0.00s; }
+    .waveform span:nth-child(8)  { animation-delay: 0.07s; }
+    .waveform span:nth-child(9)  { animation-delay: 0.14s; }
+    .waveform span:nth-child(10) { animation-delay: 0.21s; }
+    @keyframes wavebar { from{height:4px} to{height:28px} }
+
+    /* ── Grid buttons (mid) ── */
+    .btn-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px 0;
+      width: 100%;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s;
+    }
+    .btn-grid.show { opacity: 1; pointer-events: all; }
+
+    .grid-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .grid-btn {
+      width: 68px; height: 68px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .grid-btn:hover  { background: rgba(255,255,255,0.17); }
+    .grid-btn:active { transform: scale(0.93); }
+    .grid-btn.toggled { background: rgba(255,255,255,0.82); color: #000; }
+    .grid-btn svg { width: 22px; height: 22px; }
+
+    .grid-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.55);
+    }
+
+    /* ── Bottom action buttons ── */
+    .action-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 52px;
+      width: 100%;
+    }
+
+    .action-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .action-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* Answer/call btn — green */
+    .btn-call {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      border: none;
+      background: #22c55e;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-call:hover  { background: #16a34a; }
+    .btn-call:active { transform: scale(0.93); }
+    .btn-call:disabled { background: rgba(255,255,255,0.12); cursor: not-allowed; }
+    .btn-call.ringing { animation: greenring 1.8s infinite; }
+    @keyframes greenring {
+      0%   { box-shadow: 0 0 0 0   rgba(34,197,94,0.5); }
+      70%  { box-shadow: 0 0 0 18px rgba(34,197,94,0); }
+      100% { box-shadow: 0 0 0 0   rgba(34,197,94,0); }
+    }
+    .btn-call svg { width: 28px; height: 28px; }
+
+    /* End btn — red */
+    .btn-end {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      border: none;
+      background: #ef4444;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-end:hover  { background: #dc2626; }
+    .btn-end:active { transform: scale(0.93); }
+    .btn-end svg { width: 28px; height: 28px; }
+  </style>
+</head>
+<body>
+
+<div class="bg-blur"></div>
+
+<div class="phone">
+
+  <!-- Top: caller info -->
+  <div class="caller-section">
+    <div class="call-type-label" id="callTypeLabel">AI Voice Call</div>
+
+    <div class="avatar" id="avatar">DB</div>
+
+    <div class="caller-name">DigitalB Assistant</div>
+    <div class="caller-sub">Properties AI &middot; Internal</div>
+
+    <div class="call-timer" id="timer">00:00</div>
+
+    <div class="status-pill" id="statusPill">
+      <div class="status-dot"></div>
+      <span id="statusText">Loading SDK...</span>
+    </div>
+  </div>
+
+  <!-- Waveform -->
+  <div class="waveform" id="waveform">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+
+  <!-- Mid call controls (hidden until call starts) -->
+  <div class="btn-grid" id="btnGrid">
+    <!-- Mute -->
+    <div class="grid-col">
+      <button class="grid-btn" id="muteBtn" onclick="toggleMute()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="2" width="6" height="12" rx="3"/>
+          <path d="M5 10a7 7 0 0014 0"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+          <line x1="2" y1="2" x2="22" y2="22" id="muteCross" style="display:none"/>
+        </svg>
+      </button>
+      <span class="grid-label" id="muteLabel">Mute</span>
+    </div>
+
+    <!-- Keypad (decorative) -->
+    <div class="grid-col">
+      <button class="grid-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="4" height="4" rx="0.8"/>
+          <rect x="10" y="3" width="4" height="4" rx="0.8"/>
+          <rect x="17" y="3" width="4" height="4" rx="0.8"/>
+          <rect x="3" y="10" width="4" height="4" rx="0.8"/>
+          <rect x="10" y="10" width="4" height="4" rx="0.8"/>
+          <rect x="17" y="10" width="4" height="4" rx="0.8"/>
+          <rect x="3" y="17" width="4" height="4" rx="0.8"/>
+          <rect x="10" y="17" width="4" height="4" rx="0.8"/>
+          <rect x="17" y="17" width="4" height="4" rx="0.8"/>
+        </svg>
+      </button>
+      <span class="grid-label">Keypad</span>
+    </div>
+
+    <!-- Speaker (decorative) -->
+    <div class="grid-col">
+      <button class="grid-btn" id="speakerBtn" onclick="this.classList.toggle('toggled')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M15.54 8.46a5 5 0 010 7.07"/>
+          <path d="M19.07 4.93a10 10 0 010 14.14"/>
+        </svg>
+      </button>
+      <span class="grid-label">Speaker</span>
+    </div>
+  </div>
+
+  <!-- Bottom: call / end -->
+  <div class="action-row">
+    <div class="action-col" id="startCol">
+      <button class="btn-call" id="callBtn" onclick="toggleCall()" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.07 12 19.79 19.79 0 011.07 3.4 2 2 0 013.06 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+        </svg>
+      </button>
+      <span class="action-label" id="callLabel">Call</span>
+    </div>
+
+    <div class="action-col" id="endCol" style="display:none;">
+      <button class="btn-end" onclick="endCall()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.68 13.31a16 16 0 003.01 3.01l2.01-2.01a1 1 0 011.02-.25 11 11 0 003.57.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1 11 11 0 00.57 3.57 1 1 0 01-.25 1.02l-2.01 2.01z"/>
+          <line x1="2" y1="2" x2="22" y2="22" stroke="#fff" stroke-width="2"/>
+        </svg>
+      </button>
+      <span class="action-label">End</span>
+    </div>
+  </div>
+
+</div>
+
+
+<script>
+  const PUBLIC_KEY   = "{{ vapi_public_key }}";
+  const ASSISTANT_ID = "{{ vapi_assistant_id }}";
+
+  let vapiInstance  = null;
+  let isCallActive  = false;
+  let isMuted       = false;
+  let sdkReady      = false;
+  let timerInterval = null;
+  let seconds       = 0;
+
+  const callBtn       = document.getElementById("callBtn");
+  const callLabel     = document.getElementById("callLabel");
+  const startCol      = document.getElementById("startCol");
+  const endCol        = document.getElementById("endCol");
+  const statusPill    = document.getElementById("statusPill");
+  const statusText    = document.getElementById("statusText");
+  const timerEl       = document.getElementById("timer");
+  const waveform      = document.getElementById("waveform");
+  const btnGrid       = document.getElementById("btnGrid");
+  const avatar        = document.getElementById("avatar");
+  const muteLabel     = document.getElementById("muteLabel");
+  const muteCross     = document.getElementById("muteCross");
+  const muteBtn       = document.getElementById("muteBtn");
+  const callTypeLabel = document.getElementById("callTypeLabel");
+
+  function setStatus(text, state) {
+    statusText.textContent = text;
+    statusPill.className = "status-pill " + (state || "");
+  }
+
+  function startTimer() {
+    seconds = 0;
+    timerEl.classList.add("active");
+    timerInterval = setInterval(function() {
+      seconds++;
+      var m = String(Math.floor(seconds / 60)).padStart(2, "0");
+      var s = String(seconds % 60).padStart(2, "0");
+      timerEl.textContent = m + ":" + s;
+    }, 1000);
+  }
+
+  function stopTimer() {
+    clearInterval(timerInterval);
+    timerEl.classList.remove("active");
+    timerEl.textContent = "00:00";
+  }
+
+  function toggleMute() {
+    if (!vapiInstance) return;
+    isMuted = !isMuted;
+    vapiInstance.setMuted(isMuted);
+    muteBtn.classList.toggle("toggled", isMuted);
+    muteCross.style.display = isMuted ? "block" : "none";
+    muteLabel.textContent   = isMuted ? "Unmute" : "Mute";
+  }
+
+  function endCall() {
+    if (vapiInstance && isCallActive) vapiInstance.stop();
+  }
+
+  function toggleCall() {
+    if (!sdkReady || !vapiInstance) return;
+    if (isCallActive) {
+      vapiInstance.stop();
+    } else {
+      callBtn.classList.add("ringing");
+      avatar.classList.add("ringing");
+      callLabel.textContent     = "Calling...";
+      callTypeLabel.textContent = "Connecting...";
+      setStatus("Connecting...", "connecting");
+      vapiInstance.start(ASSISTANT_ID);
+    }
+  }
+
+  (function(d, t) {
+    var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+    g.src   = "https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js";
+    g.defer = true; g.async = true;
+    s.parentNode.insertBefore(g, s);
+
+    g.onload = function() {
+      vapiInstance = window.vapiSDK.run({
+        apiKey:    PUBLIC_KEY,
+        assistant: ASSISTANT_ID,
+        config: { position: "bottom-right", offset: "-9999px", width: "0px", height: "0px" },
+      });
+
+      sdkReady = true;
+      callBtn.disabled = false;
+      callBtn.classList.add("ringing");
+      callTypeLabel.textContent = "AI Voice Call";
+      setStatus("Ready to call", "");
+
+      vapiInstance.on("call-start", function() {
+        isCallActive = true;
+        callBtn.classList.remove("ringing");
+        avatar.classList.remove("ringing");
+        startCol.style.display     = "none";
+        endCol.style.display       = "flex";
+        btnGrid.classList.add("show");
+        waveform.classList.add("show", "animating", "user-speaking");
+        callTypeLabel.textContent  = "Active Call";
+        setStatus("Connected", "connected");
+        startTimer();
+      });
+
+      vapiInstance.on("call-end", function() {
+        isCallActive = false;
+        isMuted = false;
+        muteBtn.classList.remove("toggled");
+        muteCross.style.display   = "none";
+        muteLabel.textContent     = "Mute";
+        startCol.style.display    = "flex";
+        endCol.style.display      = "none";
+        btnGrid.classList.remove("show");
+        waveform.classList.remove("show","animating","user-speaking","ai-speaking");
+        callBtn.classList.add("ringing");
+        callLabel.textContent     = "Call";
+        callTypeLabel.textContent = "AI Voice Call";
+        stopTimer();
+        setStatus("Call ended", "");
+        setTimeout(function() { setStatus("Ready to call", ""); }, 2500);
+      });
+
+      vapiInstance.on("speech-start", function() {
+        waveform.classList.remove("user-speaking");
+        waveform.classList.add("ai-speaking", "animating");
+        setStatus("Speaking...", "connected");
+      });
+
+      vapiInstance.on("speech-end", function() {
+        waveform.classList.remove("ai-speaking");
+        waveform.classList.add("user-speaking");
+        setStatus("Listening...", "connected");
+      });
+
+      vapiInstance.on("error", function(e) {
+        callBtn.classList.remove("ringing");
+        avatar.classList.remove("ringing");
+        callLabel.textContent = "Retry";
+        setStatus("Error — try again", "connecting");
+        console.error("Vapi error:", e);
+      });
+    };
+
+    g.onerror = function() {
+      setStatus("SDK failed to load", "");
+      console.error("Vapi SDK load error");
+    };
+
+  })(document, "script");
+</script>
+
+</body>
+</html>

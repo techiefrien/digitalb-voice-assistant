@@ -1,0 +1,124 @@
+{% extends 'property_agent/base_form.html' %}
+
+{% block title %}Edit {{ property.name }} — DigitalB{% endblock %}
+{% block breadcrumb %}Edit property{% endblock %}
+{% block page_title %}Edit — {{ property.name }}{% endblock %}
+{% block page_sub %}Update the property details below.{% endblock %}
+
+{% block content %}
+<form method="POST" action="{% url 'property_edit' property.pk %}">
+  {% csrf_token %}
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-icon" style="background:#E1F5EE">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#0F6E56" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+      </div>
+      <span class="card-title">Edit details</span>
+    </div>
+    <div class="card-body">
+
+      <div class="section-divider">Identity</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Property name <span class="required">*</span></label>
+          <input type="text" name="name" value="{{ property.name }}" required>
+        </div>
+        <div class="field">
+          <label>Property type <span class="required">*</span></label>
+          <select name="property_type" required>
+            {% for value, label in property_types %}
+            <option value="{{ value }}"
+              {% if property.property_type == value %}selected{% endif %}>
+              {{ label }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Location / Area <span class="required">*</span></label>
+          <input type="text" name="location" value="{{ property.location }}" required>
+        </div>
+        <div class="field">
+          <label>City <span class="required">*</span></label>
+          <input type="text" name="city" value="{{ property.city }}" required>
+        </div>
+        <div class="field full">
+          <label>Description</label>
+          <textarea name="description">{{ property.description }}</textarea>
+        </div>
+      </div>
+
+      <div class="section-divider">Pricing & size</div>
+      <div class="grid-3">
+        <div class="field">
+          <label>Price (₹) <span class="required">*</span></label>
+          <input type="number" name="price" value="{{ property.price }}" required>
+          <span class="hint">Enter full amount in rupees</span>
+        </div>
+        <div class="field">
+          <label>Carpet area (sqft) <span class="required">*</span></label>
+          <input type="number" name="carpet_area" value="{{ property.carpet_area }}" required>
+        </div>
+        <div class="field">
+          <label>Furnishing</label>
+          <select name="furnishing">
+            {% for value, label in furnishing_types %}
+            <option value="{{ value }}"
+              {% if property.furnishing == value %}selected{% endif %}>
+              {{ label }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Bedrooms <span class="required">*</span></label>
+          <input type="number" name="bedrooms" value="{{ property.bedrooms }}" required>
+        </div>
+        <div class="field">
+          <label>Bathrooms <span class="required">*</span></label>
+          <input type="number" name="bathrooms" value="{{ property.bathrooms }}" required>
+        </div>
+        <div class="field">
+          <label>Floor number</label>
+          <input type="number" name="floor_number" value="{{ property.floor_number }}">
+        </div>
+        <div class="field">
+          <label>Total floors</label>
+          <input type="number" name="total_floors" value="{{ property.total_floors }}">
+        </div>
+      </div>
+
+      <div class="section-divider">Amenities & status</div>
+      <div class="grid-2">
+        <div class="field full">
+          <label>Amenities</label>
+          <input type="text" name="amenities" value="{{ property.amenities }}"
+                 placeholder="Gym, Pool, Parking, Security, Lift…">
+          <span class="hint">Comma separated list</span>
+        </div>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" name="parking" id="parking"
+               {% if property.parking %}checked{% endif %}>
+        <label for="parking">Parking available</label>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" name="is_active" id="is_active"
+               {% if property.is_active %}checked{% endif %}>
+        <label for="is_active">Mark as active listing</label>
+      </div>
+
+    </div>
+    <div class="form-actions">
+      <a href="{% url 'property_list' %}" class="btn-cancel">Cancel</a>
+      <button type="submit" class="btn-save">Save changes</button>
+    </div>
+  </div>
+
+</form>
+{% endblock %}

@@ -1,0 +1,195 @@
+/* ── Hero ─────────────────────────────────────────────────────────────────── */
+.hero {
+  background: #fff;
+  border: 0.5px solid rgba(0,0,0,0.1);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.hero-left  { flex: 1; }
+
+.hero-badges {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.badge-neutral { background: #f0eeea; color: #666; }
+
+.hero-name {
+  font-size: 22px;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.hero-loc {
+  font-size: 14px;
+  color: #888;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hero-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.price     { font-size: 24px; font-weight: 500; color: #185FA5; }
+.price-sub { font-size: 12px; color: #aaa; text-align: right; }
+
+.hero-actions { display: flex; gap: 8px; }
+
+.btn-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 500;
+  background: #185FA5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn-edit:hover { background: #0C447C; }
+
+.btn-del {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 500;
+  background: none;
+  color: #A32D2D;
+  border: 0.5px solid #F09595;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn-del:hover { background: #FCEBEB; }
+
+/* ── Grid layout ──────────────────────────────────────────────────────────── */
+.grid-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.card.full { grid-column: 1 / -1; }
+
+/* ── Stat grid inside key details card ───────────────────────────────────── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.stat-item {
+  background: #f8f7f5;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.stat-label { font-size: 11px; color: #888; margin-bottom: 3px; }
+.stat-value { font-size: 16px; font-weight: 500; color: #1a1a1a; }
+
+/* ── Info rows ────────────────────────────────────────────────────────────── */
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 0.5px solid rgba(0,0,0,0.06);
+  font-size: 13px;
+}
+.info-row:last-child { border-bottom: none; }
+
+.info-label { color: #888; }
+
+.info-value {
+  color: #1a1a1a;
+  font-weight: 500;
+  text-align: right;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ── Status dots ──────────────────────────────────────────────────────────── */
+.dot         { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.dot-yes     { background: #639922; }
+.dot-no      { background: #E24B4A; }
+
+/* ── Amenity tags ─────────────────────────────────────────────────────────── */
+.amenity-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.amenity-tag {
+  background: #f0eeea;
+  border: 0.5px solid rgba(0,0,0,0.1);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: #666;
+}
+
+/* ── Description ──────────────────────────────────────────────────────────── */
+.desc-text {
+  font-size: 13px;
+  color: #888;
+  line-height: 1.7;
+}
+
+/* ── Transcripts ──────────────────────────────────────────────────────────── */
+.transcript-list  { display: flex; flex-direction: column; gap: 8px; }
+
+.transcript-item {
+  background: #f8f7f5;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.transcript-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 11px;
+  color: #aaa;
+}
+
+.transcript-q {
+  font-size: 13px;
+  color: #1a1a1a;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.transcript-a {
+  font-size: 12px;
+  color: #666;
+  padding-left: 10px;
+  border-left: 2px solid rgba(0,0,0,0.1);
+  line-height: 1.6;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  font-size: 13px;
+  color: #aaa;
+}

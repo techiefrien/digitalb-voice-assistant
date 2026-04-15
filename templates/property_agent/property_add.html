@@ -1,0 +1,137 @@
+{% extends 'property_agent/base_form.html' %}
+
+{% block title %}Add Property — DigitalB{% endblock %}
+{% block breadcrumb %}Add property{% endblock %}
+{% block page_title %}Add new property{% endblock %}
+{% block page_sub %}Fields marked <span style="color:#E24B4A">*</span> are required.{% endblock %}
+
+{% block content %}
+<form method="POST" action="{% url 'property_add' %}">
+  {% csrf_token %}
+
+  <!-- Basic details -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-icon" style="background:#E6F1FB">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+      <span class="card-title">Basic details</span>
+    </div>
+    <div class="card-body">
+
+      <div class="section-divider">Identity</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Property name <span class="required">*</span></label>
+          <input type="text" name="name" placeholder="e.g. Sunrise Heights"
+                 value="{{ request.POST.name }}" required>
+        </div>
+        <div class="field">
+          <label>Property type <span class="required">*</span></label>
+          <select name="property_type" required>
+            <option value="">Select type</option>
+            {% for value, label in property_types %}
+            <option value="{{ value }}"
+              {% if request.POST.property_type == value %}selected{% endif %}>
+              {{ label }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Location / Area <span class="required">*</span></label>
+          <input type="text" name="location" placeholder="e.g. Wakad"
+                 value="{{ request.POST.location }}" required>
+        </div>
+        <div class="field">
+          <label>City <span class="required">*</span></label>
+          <input type="text" name="city" placeholder="e.g. Pune"
+                 value="{{ request.POST.city }}" required>
+        </div>
+        <div class="field full">
+          <label>Description</label>
+          <textarea name="description"
+                    placeholder="Brief description of the property…">{{ request.POST.description }}</textarea>
+        </div>
+      </div>
+
+      <div class="section-divider">Pricing & size</div>
+      <div class="grid-3">
+        <div class="field">
+          <label>Price (₹) <span class="required">*</span></label>
+          <input type="number" name="price" placeholder="e.g. 6500000"
+                 value="{{ request.POST.price }}" required>
+          <span class="hint">Enter full amount in rupees</span>
+        </div>
+        <div class="field">
+          <label>Carpet area (sqft) <span class="required">*</span></label>
+          <input type="number" name="carpet_area" placeholder="e.g. 750"
+                 value="{{ request.POST.carpet_area }}" required>
+        </div>
+        <div class="field">
+          <label>Furnishing</label>
+          <select name="furnishing">
+            {% for value, label in furnishing_types %}
+            <option value="{{ value }}"
+              {% if request.POST.furnishing == value %}selected{% endif %}>
+              {{ label }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Bedrooms <span class="required">*</span></label>
+          <input type="number" name="bedrooms" placeholder="e.g. 2"
+                 value="{{ request.POST.bedrooms }}" required>
+        </div>
+        <div class="field">
+          <label>Bathrooms <span class="required">*</span></label>
+          <input type="number" name="bathrooms" placeholder="e.g. 2"
+                 value="{{ request.POST.bathrooms }}" required>
+        </div>
+        <div class="field">
+          <label>Floor number</label>
+          <input type="number" name="floor_number" placeholder="e.g. 5"
+                 value="{{ request.POST.floor_number }}">
+        </div>
+        <div class="field">
+          <label>Total floors</label>
+          <input type="number" name="total_floors" placeholder="e.g. 12"
+                 value="{{ request.POST.total_floors }}">
+        </div>
+      </div>
+
+      <div class="section-divider">Amenities & status</div>
+      <div class="grid-2">
+        <div class="field full">
+          <label>Amenities</label>
+          <input type="text" name="amenities"
+                 placeholder="Gym, Pool, Parking, Security, Lift…"
+                 value="{{ request.POST.amenities }}">
+          <span class="hint">Comma separated list</span>
+        </div>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" name="parking" id="parking"
+               {% if request.POST.parking %}checked{% endif %}>
+        <label for="parking">Parking available</label>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" name="is_active" id="is_active"
+               {% if not request.POST or request.POST.is_active %}checked{% endif %}>
+        <label for="is_active">Mark as active listing</label>
+      </div>
+
+    </div>
+    <div class="form-actions">
+      <a href="{% url 'property_list' %}" class="btn-cancel">Cancel</a>
+      <button type="submit" class="btn-save">Save property</button>
+    </div>
+  </div>
+
+</form>
+{% endblock %}
